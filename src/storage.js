@@ -1,4 +1,4 @@
-// Image and preferences live in one record, committed in one transaction.
+// Image and metadata use separate records, read and written atomically.
 // No base64 in the profile, no uploads, and no localStorage quota limit.
 export function createStorage(indexedDB) {
   let connection;
@@ -29,11 +29,15 @@ export function createStorage(indexedDB) {
   }
   return {
     async read() {
-      const legacy = await transaction('readonly', store => store.get('current'));
-      const metadata = await transaction('readonly', store => store.get('metadata'));
-      if (!metadata) return legacy;
-      const image = await transaction('readonly', store => store.get('image'));
-      return { ...metadata, image: image || null };
+      const db = await open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('settings', 'readonly');
+        const store = tx.objectStore('settings');
+        const legacy = store.get('current'), metadata = store.get('metadata'), image = store.get('image');
+        tx.oncomplete = () => resolve(metadata.result ? { ...metadata.result, image: image.result || null } : legacy.result);
+        tx.onabort = () => reject(tx.error || new Error('读取背景失败。'));
+        tx.onerror = () => {};
+      });
     },
     write: (record, imageChanged = true) => transaction('readwrite', store => {
       // Split records, migrate legacy atomically on first save.

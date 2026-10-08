@@ -56,7 +56,8 @@ function createPlugin(React) {
             await storage.write(next, !migrated || next.image !== record.image);
             migrated = true;
             if (!disposed) { record = next; renderBackground(); }
-          } catch (e) { error = e.message || '保存失败，请重试。'; }
+            return true;
+          } catch (e) { error = e.message || '保存失败，请重试。'; return false; }
           finally { busy = false; if (!disposed) emit(); }
         });
         return queue;
@@ -64,16 +65,22 @@ function createPlugin(React) {
       function Settings() {
         const fileInput = React.useRef(null);
         const [draft, setDraft] = React.useState({});
-        const [scheduler] = React.useState(() => createPreferenceScheduler(patch => update(r => ({ ...r, preferences: normalizePreferences({ ...r.preferences, ...patch }) }))));
+        const mounted = React.useRef(true);
+        const generation = React.useRef(0);
+        const [scheduler] = React.useState(() => createPreferenceScheduler(async patch => {
+          const revision = generation.current;
+          const success = await update(r => ({ ...r, preferences: normalizePreferences({ ...r.preferences, ...patch }) }));
+          if (mounted.current && revision === generation.current) setDraft(d => acknowledgeDraft(d, patch));
+          // On failure revert preview to persisted values; error remains visible.
+          return success;
+        }));
+        React.useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
         React.useEffect(() => () => { void scheduler.flush(); }, [scheduler]);
         const [, refresh] = React.useState(0);
         React.useEffect(() => { const fn = () => refresh(n => n + 1); listeners.add(fn); return () => listeners.delete(fn); }, []);
         const p = record.preferences;
         const set = (key, value) => update(r => ({ ...r, preferences: normalizePreferences({ ...r.preferences, [key]: value }) }));
-        const commit = (key, value) => {
-          scheduler.schedule(key, value);
-          void scheduler.flush();
-        };
+        const commit = () => { void scheduler.flush(); };
         const slider = (key, title, hint, max, unit = '%') => {
           const value = draft[key] ?? p[key];
           return h('div', { className: 'dsh-bg-control', key },
@@ -83,7 +90,8 @@ function createPlugin(React) {
               onChange: e => { const value = Number(e.target.value); setDraft(d => ({ ...d, [key]: value })); scheduler.schedule(key, value); },
               onPointerUp: e => commit(key, Number(e.currentTarget.value)),
               onKeyUp: e => { if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key)) commit(key, Number(e.currentTarget.value)); },
-              onBlur: e => { if (draft[key] !== undefined && !busy) commit(key, Number(e.currentTarget.value)); }
+              onBlur: commit,
+              onPointerCancel: commit
             })
           );
         };
@@ -126,7 +134,7 @@ function createPlugin(React) {
               slider('blur', '背景模糊', '为背景添加柔和的虚化效果。', 24, 'px'),
               h('div', { className: 'dsh-bg-control' }, h('div', { className: 'dsh-bg-control-head' }, h('span', null, '图片适配')), h('div', { className: 'dsh-bg-segments', role: 'group', 'aria-label': '图片适配' }, ...[['cover','铺满'],['contain','完整显示'],['repeat','平铺']].map(([value,label]) => h('button', { key: value, type: 'button', 'aria-pressed': p.fit === value, onClick: () => set('fit', value) }, label))))
             ),
-            h('div', { className: 'dsh-bg-footer' }, h('button', { type: 'button', className: 'dsh-bg-button', disabled: busy, onClick: () => { scheduler.cancel(); setDraft({}); void update(r => ({ ...r, preferences: normalizePreferences() })); } }, '恢复默认效果'), h('button', { type: 'button', disabled: !record.image, className: 'dsh-bg-button', onClick: () => { scheduler.cancel(); setDraft({}); void update(() => ({ preferences: normalizePreferences(), image: null, name: '' })); } }, '移除背景'))
+            h('div', { className: 'dsh-bg-footer' }, h('button', { type: 'button', className: 'dsh-bg-button', disabled: busy, onClick: () => { generation.current++; scheduler.cancel(); setDraft({}); void update(r => ({ ...r, preferences: normalizePreferences() })); } }, '恢复默认效果'), h('button', { type: 'button', disabled: !record.image, className: 'dsh-bg-button', onClick: () => { generation.current++; scheduler.cancel(); setDraft({}); void update(() => ({ preferences: normalizePreferences(), image: null, name: '' })); } }, '移除背景'))
           ),
           h('p', { className: 'dsh-bg-status', role: error ? 'alert' : 'status', style: { marginTop: 12 } }, error || (!ready ? '正在读取设置…' : busy ? '正在保存…' : '关闭设置后即可查看首页效果。'))
         );

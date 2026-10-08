@@ -19,7 +19,8 @@ ${home}::before {
 ${home} .BynINW_frame { background:transparent !important; }
 ${home} .BynINW_sidebarCol { background:${mix(sidebar, p.sidebarTransparency)} !important; }
 ${home} .BynINW_sidebarCol ._2H3hWW_root { background:transparent !important; }
-${home} .BynINW_centerCol { background:${mix(base, p.chatTransparency)} !important; }
+${home} .BynINW_centerCol { background:${base} !important; }
+${home} .BynINW_centerCol:has(.Dc7zOa_root, .Hqq-bq_root) { background:${mix(base, p.chatTransparency)} !important; }
 ${home} .BynINW_rightbarCol { background:${base} !important; }
 ${home} .Dc7zOa_root { background:transparent !important; }
 ${home} .RlGAzG_card { background:${mix(input, p.inputTransparency)} !important; }

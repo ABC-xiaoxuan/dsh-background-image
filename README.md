@@ -4,13 +4,13 @@
 
 ## 安装（无需下载源码）
 
-适配 DeepSeek Harness **0.2.0-rc.2**，当前版本 **v1.3.1**。
+适配 DeepSeek Harness **0.2.0-rc.2**，当前版本 **v1.3.2**。
 
 1. 打开 Harness 的 **插件** 页面，找到添加／安装插件入口。
 2. 在安装地址／包地址输入框粘贴下面的完整地址，并确认安装：
 
 ```text
-https://github.com/ABC-xiaoxuan/dsh-background-image/releases/download/v1.3.1/dsh-background-image-1.3.1.tgz
+https://github.com/ABC-xiaoxuan/dsh-background-image/releases/download/v1.3.2/dsh-background-image-1.3.2.tgz
 ```
 
 3. 启用 `dsh-background-image`。如提示需要重启，请完全退出并重新打开 Harness。
@@ -24,13 +24,20 @@ https://github.com/ABC-xiaoxuan/dsh-background-image/releases/download/v1.3.1/ds
 
 ### GitHub 无法访问时
 
-从 [v1.3.1 发布页](https://github.com/ABC-xiaoxuan/dsh-background-image/releases/tag/v1.3.1) 下载 `dsh-background-image-1.3.1.tgz`，再通过插件管理器安装本地文件。若入口接受的是路径，请填写文件的**绝对路径**，不要填写 GitHub 发布页地址。
+从 [v1.3.2 发布页](https://github.com/ABC-xiaoxuan/dsh-background-image/releases/tag/v1.3.2) 下载 `dsh-background-image-1.3.2.tgz`，再通过插件管理器安装本地文件。若入口接受的是路径，请填写文件的**绝对路径**，不要填写 GitHub 发布页地址。
 
 ### 更新与卸载
 
 - 更新：使用新版本 Release 的 `.tgz` 完整地址安装，按提示重启。
 - 禁用：在插件页面关闭该插件，背景样式会移除。
 - 卸载：通过插件管理器卸载；浏览器本地图片数据可能仍保留。需要删除图片时，可先在设置中点击“移除背景”；清除站点数据也会删除图片，但可能影响其他 Harness 本地设置。
+
+## v1.3.2 稳定性修复
+
+- 保存完成后清理对应滑块草稿，保留正在继续调整的新值；保存失败时预览回到已保存参数并显示错误。
+- 松手／失焦仅提交待保存参数，不再从旧控件数值生成额外写入，避免恢复默认后旧参数写回。
+- 图片、文件名和参数在同一只读事务中读取，避免跨窗口写入时混合不同快照；尚未实现跨窗口实时同步。
+- 主区域仅首页／聊天内容存在时透出图片；插件列表等其他主页面保持正常背景，侧栏仍显示背景。
 
 ## 使用
 
