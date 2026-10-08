@@ -10,7 +10,7 @@ test('save acknowledgement clears submitted draft but keeps newer changes',()=>{
 test('main pages stay opaque unless conversation or hero exists',()=>{
  const css=backgroundCSS('blob:test',{}, {'--dsw-alias-bg-base':'rgb(1, 2, 3)'});
  assert.match(css,/\.BynINW_centerCol \{ background:rgb\(1, 2, 3\) !important/);
- assert.match(css,/\.BynINW_centerCol:has\(\.Dc7zOa_root, \.Hqq-bq_root\)/);
+ assert.match(css,/body:not\(:has\(\.wCInkW_overlay\)\):has\(\.Dc7zOa_root, \.Hqq-bq_root\)/);
 });
 test('metadata and image read through exactly one snapshot transaction',async()=>{
  const values={metadata:{name:'photo',preferences:{blur:2}},image:new Blob(['image'])};

@@ -6,7 +6,8 @@ export function backgroundCSS(url, preferences, surfaces = {}) {
   const sidebar = surfaces['--dsw-specific-sidebar-fill'] || base;
   const input = surfaces['--dsw-specific-input-major'] || base;
   const mix = (color, transparency) => `color-mix(in srgb,${color} ${100 - transparency}%,transparent)`;
-  const home = 'body:not(:has(.wCInkW_overlay))';
+  // Gate every rule to the actual home/conversation surface, not merely the shell.
+  const home = 'body:not(:has(.wCInkW_overlay)):has(.Dc7zOa_root, .Hqq-bq_root)';
   return `
 ${home} { isolation:isolate; }
 ${home}::before {
