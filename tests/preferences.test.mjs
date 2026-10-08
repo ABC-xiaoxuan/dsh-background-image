@@ -25,9 +25,15 @@ test('independent transparency affects image and surfaces, not text', () => {
   const css = backgroundCSS('blob:test',{imageTransparency:35,panelTransparency:80},{'--dsw-alias-bg-base':'rgb(255, 255, 255)','--dsw-specific-input-major':'rgb(20, 20, 20)'});
   assert.match(css,/opacity:0.65/);
   assert.match(css,/rgb\(20, 20, 20\) 20%,transparent/);
-  assert.match(css,/body::before/);
+  assert.match(css,/body:not\(:has\(\.wCInkW_overlay\)\)::before/);
   assert.match(css,/BynINW_rightbarCol/);
   assert.doesNotMatch(css,/label-primary:/);
+});
+test('every background rule is inactive while settings is open', () => {
+  const css = backgroundCSS('blob:test',{}, {'--dsw-alias-bg-base':'rgb(255, 255, 255)'});
+  const selectors = [...css.matchAll(/([^{}]+)\{/g)].flatMap(match => match[1].trim().split(/,\s*(?=body)/));
+  assert.ok(selectors.length >= 3);
+  for (const selector of selectors) assert.ok(selector.startsWith('body:not(:has(.wCInkW_overlay))'), selector);
 });
 test('bundle registers through the runtime ModuleLoader', async () => {
   let definition;
