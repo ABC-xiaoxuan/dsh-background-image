@@ -1,0 +1,10 @@
+# Locally extracted upstream runtime (not part of this plugin)
+/research/
+/node_modules/
+*.tgz
+*.log
+.env
+.env.*
+.DS_Store
+/.github-*.json
+/scripts/github-upload.mjs
