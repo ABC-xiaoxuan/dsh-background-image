@@ -2,9 +2,37 @@
 
 适配当前 DeepSeek Harness 0.2.0-rc.2 的 Web / 桌面界面。
 
-## 使用
+## 安装（无需下载源码）
 
-安装并启用后刷新界面，打开 **设置 → 背景图片**，选择本地图片。
+适配 DeepSeek Harness **0.2.0-rc.2**，当前版本 **v1.3.0**。
+
+1. 打开 Harness 的 **插件** 页面，找到添加／安装插件入口。
+2. 在安装地址／包地址输入框粘贴下面的完整地址，并确认安装：
+
+```text
+https://github.com/ABC-xiaoxuan/dsh-background-image/releases/download/v1.3.0/dsh-background-image-1.3.0.tgz
+```
+
+3. 启用 `dsh-background-image`。如提示需要重启，请完全退出并重新打开 Harness。
+4. 打开 **设置 → 背景图片**，选择本地图片。关闭设置后查看首页／聊天界面的效果。
+
+这是一款第三方插件，通过地址添加；尚未收录到官方默认插件列表，也尚未发布到 npm。不同 Harness 版本的安装入口文字可能不同。
+
+### 安装验证状态
+
+本地 `.tgz` 安装已经在当前桌面环境完成。通过公开 GitHub 地址的远程安装也已尝试，但下载请求出现 `ETIMEDOUT`，因此尚不能宣称远程安装已验证成功。安装需要 Harness 后台进程能够访问 GitHub 下载地址；浏览器能打开 GitHub 不一定意味着后台下载也能访问。
+
+### GitHub 无法访问时
+
+从 [v1.3.0 发布页](https://github.com/ABC-xiaoxuan/dsh-background-image/releases/tag/v1.3.0) 下载 `dsh-background-image-1.3.0.tgz`，再通过插件管理器安装本地文件。若入口接受的是路径，请填写文件的**绝对路径**，不要填写 GitHub 发布页地址。
+
+### 更新与卸载
+
+- 更新：使用新版本 Release 的 `.tgz` 完整地址安装，按提示重启。
+- 禁用：在插件页面关闭该插件，背景样式会移除。
+- 卸载：通过插件管理器卸载；浏览器本地图片数据可能仍保留。需要删除图片时，可先在设置中点击“移除背景”；清除站点数据也会删除图片，但可能影响其他 Harness 本地设置。
+
+## 使用
 
 - 支持 JPG、PNG、WebP、GIF、AVIF、BMP，最大 20 MB。
 - 图片存入当前浏览器来源的 IndexedDB，不上传服务器。
