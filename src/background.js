@@ -1,19 +1,14 @@
 import { normalizePreferences } from './preferences.js';
-// Background tokens are captured BEFORE our stylesheet is applied so overrides
-// never compound and continue to follow the active light/dark theme.
 export function backgroundCSS(url, preferences, surfaces = {}) {
   const p = normalizePreferences(preferences);
   if (!url.startsWith('blob:')) throw new Error('Background must use a local Blob URL');
   const base = surfaces['--dsw-alias-bg-base'] || '#ffffff';
-  const alpha = 100 - p.panelTransparency;
-  const tokens = Object.entries(surfaces)
-    .filter(([key, value]) => /^--dsw-[a-z0-9-]+$/.test(key) && value && !/[{};]/.test(value))
-    .map(([key, value]) => `${key}:color-mix(in srgb,${value} ${alpha}%,transparent) !important;`).join('\n');
-  // Settings is a modal owned by ui-settings-general in this runtime.
-  // Disable ALL background overrides while it is open, restoring pristine tokens.
+  const sidebar = surfaces['--dsw-specific-sidebar-fill'] || base;
+  const input = surfaces['--dsw-specific-input-major'] || base;
+  const mix = (color, transparency) => `color-mix(in srgb,${color} ${100 - transparency}%,transparent)`;
   const home = 'body:not(:has(.wCInkW_overlay))';
   return `
-${home} { isolation:isolate; ${tokens} }
+${home} { isolation:isolate; }
 ${home}::before {
   content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
   background-image:linear-gradient(color-mix(in srgb,${base} ${p.overlay}%,transparent),color-mix(in srgb,${base} ${p.overlay}%,transparent)),url(${JSON.stringify(url)});
@@ -21,8 +16,10 @@ ${home}::before {
   background-position:center; background-repeat:${p.fit === 'repeat' ? 'repeat' : 'no-repeat'};
   opacity:${(100 - p.imageTransparency) / 100}; filter:blur(${p.blur}px);
 }
-${home} .BynINW_frame, ${home} .BynINW_frame > .BynINW_centerCol,
-${home} .BynINW_frame > .BynINW_sidebarCol, ${home} .BynINW_frame > .BynINW_rightbarCol,
-${home} .BynINW_frame .Dc7zOa_root { background:transparent !important; }
+${home} .BynINW_frame { background:transparent !important; }
+${home} .BynINW_sidebarCol { background:${mix(sidebar, p.sidebarTransparency)} !important; }
+${home} .BynINW_centerCol, ${home} .BynINW_rightbarCol { background:${mix(base, p.chatTransparency)} !important; }
+${home} .Dc7zOa_root { background:transparent !important; }
+${home} .RlGAzG_card { background:${mix(input, p.inputTransparency)} !important; }
 `;
 }

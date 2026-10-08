@@ -1,4 +1,8 @@
 const SETTINGS_CSS = `
+.dsh-bg-preview-image,.dsh-bg-preview-mask{position:absolute;inset:0;background-position:center;pointer-events:none}
+.dsh-bg-mini{position:relative;width:100%;height:100%;display:grid;grid-template-columns:28% 1fr;font-size:11px;pointer-events:none}
+.dsh-bg-mini aside{display:flex;flex-direction:column;gap:18px;padding:16px 10px;border-right:1px solid var(--dsw-alias-border-l1)}
+.dsh-bg-mini main{display:flex;flex-direction:column;gap:12px;padding:22px 12px}.dsh-bg-mini main>div{margin-top:auto;border-radius:10px;padding:10px;border:1px solid var(--dsw-alias-border-l1)}
 .dsh-bg-settings{color:var(--dsw-alias-label-primary);padding:8px 0 24px;max-width:640px;--bg-accent:var(--dsw-alias-brand-primary)}
 .dsh-bg-settings *{box-sizing:border-box}.dsh-bg-settings h2{font-size:22px;letter-spacing:-.4px;margin:0 0 8px;font-weight:650}.dsh-bg-settings p{margin:0}
 .dsh-bg-muted{font-size:12px;line-height:1.7;color:var(--dsw-alias-label-secondary)}

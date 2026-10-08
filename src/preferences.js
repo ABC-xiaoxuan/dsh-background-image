@@ -1,4 +1,4 @@
-export const DEFAULTS = Object.freeze({ enabled: true, overlay: 20, imageTransparency: 0, panelTransparency: 80, blur: 0, fit: 'cover' });
+export const DEFAULTS = Object.freeze({ enabled: true, overlay: 20, imageTransparency: 0, panelTransparency: 80, sidebarTransparency: 80, chatTransparency: 80, inputTransparency: 30, blur: 0, fit: 'cover' });
 export const MAX_FILE_BYTES = 20 * 1024 * 1024;
 export const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/bmp']);
 
@@ -12,6 +12,9 @@ export function normalizePreferences(value) {
     overlay: bounded(value?.overlay, DEFAULTS.overlay, 90),
     imageTransparency: bounded(value?.imageTransparency, DEFAULTS.imageTransparency, 100),
     panelTransparency: bounded(value?.panelTransparency, DEFAULTS.panelTransparency, 100),
+    sidebarTransparency: bounded(value?.sidebarTransparency, bounded(value?.panelTransparency, DEFAULTS.sidebarTransparency, 100), 100),
+    chatTransparency: bounded(value?.chatTransparency, bounded(value?.panelTransparency, DEFAULTS.chatTransparency, 100), 100),
+    inputTransparency: bounded(value?.inputTransparency, DEFAULTS.inputTransparency, 100),
     blur: bounded(value?.blur, DEFAULTS.blur, 24),
     fit: ['cover', 'contain', 'repeat'].includes(value?.fit) ? value.fit : DEFAULTS.fit,
   };

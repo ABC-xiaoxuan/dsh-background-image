@@ -28,9 +28,19 @@ export function createStorage(indexedDB) {
     });
   }
   return {
-    read: () => transaction('readonly', (store) => store.get('current')),
-    write: (record) => transaction('readwrite', (store) => store.put(record, 'current')),
-    clear: () => transaction('readwrite', (store) => store.delete('current')),
+    async read() {
+      const legacy = await transaction('readonly', store => store.get('current'));
+      const metadata = await transaction('readonly', store => store.get('metadata'));
+      if (!metadata) return legacy;
+      const image = await transaction('readonly', store => store.get('image'));
+      return { ...metadata, image: image || null };
+    },
+    write: (record, imageChanged = true) => transaction('readwrite', store => {
+      // Split records, migrate legacy atomically on first save.
+      if (imageChanged) { store.put(record.image, 'image'); store.delete('current'); }
+      return store.put({ preferences: record.preferences, name: record.name }, 'metadata');
+    }),
+    clear: () => transaction('readwrite', store => store.clear()),
     async close() {
       if (connection) (await connection.catch(() => null))?.close();
       connection = undefined;
