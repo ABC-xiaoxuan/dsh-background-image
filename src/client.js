@@ -11,6 +11,9 @@ function createPlugin(React) {
       const style = document.createElement('style');
       style.dataset.dshBackground = 'true';
       document.head.append(style);
+      const settingsStyle = document.createElement('style');
+      settingsStyle.textContent = SETTINGS_CSS;
+      document.head.append(settingsStyle);
       const emit = () => listeners.forEach(fn => fn());
       function renderBackground() {
         if (url) URL.revokeObjectURL(url);
@@ -50,45 +53,66 @@ function createPlugin(React) {
         finally { busy = false; if (!disposed) emit(); }
       }
       function Settings() {
+        const fileInput = React.useRef(null);
+        const [draft, setDraft] = React.useState({});
         const [, refresh] = React.useState(0);
         React.useEffect(() => { const fn = () => refresh(n => n + 1); listeners.add(fn); return () => listeners.delete(fn); }, []);
         const p = record.preferences;
         const set = (key, value) => update(r => ({ ...r, preferences: normalizePreferences({ ...r.preferences, [key]: value }) }));
-        const row = (label, control) => h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, margin: '18px 0' } }, h('span', null, label), control);
-        return h('section', { style: { padding: 24, maxWidth: 680, color: 'var(--dsw-alias-label-primary)' } },
-          h('h2', { style: { fontSize: 22, fontWeight: 600 } }, '背景图片'),
-          h('p', { style: { margin: '12px 0', color: 'var(--dsw-alias-label-secondary)' } }, '图片仅保存在此浏览器／桌面端本地，不上传服务器。支持最大 20 MB 的图片。'),
-          h('fieldset', { disabled: !ready || busy, style: { border: 0, padding: 0 } },
-            row('选择本地图片', h('input', { type: 'file', accept: [...IMAGE_TYPES].join(','), onChange: e => {
-              const file = e.target.files?.[0]; e.target.value = ''; if (!file) return;
-              void update(async r => {
-                validateImage(file);
-                const checkURL = URL.createObjectURL(file);
-                try { const image = new Image(); image.src = checkURL; await image.decode(); }
-                catch { throw new Error('无法解码图片，请选择有效图片。'); }
-                finally { URL.revokeObjectURL(checkURL); }
-                return { ...r, image: file, name: file.name, preferences: { ...r.preferences, enabled: true } };
-              });
-            } })),
-            url ? h('img', { src: url, alt: '当前背景预览', style: { width: '100%', height: 180, objectFit: 'contain', borderRadius: 12, background: 'var(--dsw-alias-bg-layer-2)' } }) : null,
-            h('p', null, record.name || '尚未选择背景图片'),
-            row('启用背景', h('input', { type: 'checkbox', checked: p.enabled, onChange: e => set('enabled', e.target.checked) })),
-            row(`背景图片透明度 ${p.imageTransparency}%`, h('input', { type: 'range', min: 0, max: 100, value: p.imageTransparency, onChange: e => set('imageTransparency', Number(e.target.value)) })),
-            row(`界面面板透明度 ${p.panelTransparency}%`, h('input', { type: 'range', min: 0, max: 100, value: p.panelTransparency, onChange: e => set('panelTransparency', Number(e.target.value)) })),
-            h('p', { style: { color: 'var(--dsw-alias-label-secondary)' } }, '图片透明度越高，图片越淡；面板透明度越高，背景越清晰。文字和图标不会变透明。网页、PDF 等嵌入内容不受影响。'),
-            row(`主题遮罩 ${p.overlay}%`, h('input', { type: 'range', min: 0, max: 90, value: p.overlay, onChange: e => set('overlay', Number(e.target.value)) })),
-            row(`背景模糊 ${p.blur}px`, h('input', { type: 'range', min: 0, max: 24, value: p.blur, onChange: e => set('blur', Number(e.target.value)) })),
-            row('图片适配', h('select', { value: p.fit, onChange: e => set('fit', e.target.value), style: { background: 'var(--dsw-alias-bg-layer-1)', color: 'inherit', padding: 6 } },
-              h('option', { value: 'cover' }, '铺满（裁切）'), h('option', { value: 'contain' }, '完整显示'), h('option', { value: 'repeat' }, '平铺'))),
-            h('button', { type: 'button', onClick: () => update(() => ({ preferences: normalizePreferences(), image: null, name: '' })), style: { padding: '8px 16px', border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 8 } }, '移除图片并恢复默认')
+        const commit = (key, value) => {
+          void update(r => ({ ...r, preferences: normalizePreferences({ ...r.preferences, [key]: value }) })).finally(() => setDraft(d => { const next = { ...d }; delete next[key]; return next; }));
+        };
+        const slider = (key, title, hint, max, unit = '%') => {
+          const value = draft[key] ?? p[key];
+          return h('div', { className: 'dsh-bg-control', key },
+            h('div', { className: 'dsh-bg-control-head' }, h('label', { htmlFor: `dsh-bg-${key}` }, title), h('output', { className: 'dsh-bg-value', htmlFor: `dsh-bg-${key}` }, `${value}${unit}`)),
+            h('p', { className: 'dsh-bg-muted' }, hint),
+            h('input', { id: `dsh-bg-${key}`, type: 'range', min: 0, max, value,
+              onChange: e => setDraft(d => ({ ...d, [key]: Number(e.target.value) })),
+              onPointerUp: e => commit(key, Number(e.currentTarget.value)),
+              onKeyUp: e => { if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key)) commit(key, Number(e.currentTarget.value)); },
+              onBlur: e => { if (draft[key] !== undefined && !busy) commit(key, Number(e.currentTarget.value)); }
+            })
+          );
+        };
+        const icon = h('svg', { width: 32, height: 32, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, 'aria-hidden': true }, h('rect', { x: 3, y: 3, width: 18, height: 18, rx: 4 }), h('circle', { cx: 8, cy: 8, r: 1.5 }), h('path', { d: 'M3 17l5-5 4 4 4-6 5 7' }));
+        return h('section', { className: 'dsh-bg-settings' },
+          h('h2', null, '背景图片'),
+          h('p', { className: 'dsh-bg-muted' }, '让首页多一点你的风格。设置页面保持原始主题，不受背景影响。'),
+          h('fieldset', { disabled: !ready || busy },
+            h('div', { className: 'dsh-bg-card' },
+              h('div', { className: 'dsh-bg-top' }, h('span', { className: 'dsh-bg-title' }, '你的背景'), h('span', { className: 'dsh-bg-tag' }, '仅本地存储')),
+              h('div', { className: 'dsh-bg-preview' }, url ? h('img', { src: url, alt: '所选背景图片预览', style: { objectFit: p.fit === 'contain' ? 'contain' : 'cover' } }) : h('div', { className: 'dsh-bg-empty' }, icon, h('strong', null, '选择一张喜欢的图片'), h('p', { className: 'dsh-bg-muted' }, '风景、插画，或你捕捉的美好瞬间'))),
+              h('div', { className: 'dsh-bg-upload' }, h('span', { className: 'dsh-bg-filename', title: record.name }, record.name || 'JPG · PNG · WebP 等，最大 20 MB'), h('button', { type: 'button', className: 'dsh-bg-button dsh-bg-primary', onClick: () => fileInput.current?.click() }, url ? '更换图片' : '选择图片')),
+              h('input', { ref: fileInput, type: 'file', hidden: true, accept: [...IMAGE_TYPES].join(','), onChange: e => {
+                const file = e.target.files?.[0]; e.target.value = ''; if (!file) return;
+                void update(async r => {
+                  validateImage(file);
+                  const checkURL = URL.createObjectURL(file);
+                  try { const image = new Image(); image.src = checkURL; await image.decode(); }
+                  catch { throw new Error('无法解码图片，请选择有效图片。'); }
+                  finally { URL.revokeObjectURL(checkURL); }
+                  return { ...r, image: file, name: file.name, preferences: { ...r.preferences, enabled: true } };
+                });
+              } })
+            ),
+            h('div', { className: 'dsh-bg-card' },
+              h('div', { className: 'dsh-bg-top' }, h('div', null, h('div', { className: 'dsh-bg-title' }, '背景效果'), h('p', { className: 'dsh-bg-muted' }, '启用后仅在首页／聊天主界面显示')), h('button', { type: 'button', role: 'switch', 'aria-label': '启用背景图片', 'aria-checked': p.enabled, className: 'dsh-bg-switch', onClick: () => set('enabled', !p.enabled) }, h('span'))),
+              slider('imageTransparency', '图片透明度', '数值越高，图片越淡。', 100),
+              slider('panelTransparency', '面板透明度', '数值越高，背景越清晰；文字和图标保持清晰。', 100),
+              slider('overlay', '主题遮罩', '柔化图片颜色，让聊天内容更易阅读。', 90),
+              slider('blur', '背景模糊', '为背景添加柔和的虚化效果。', 24, 'px'),
+              h('div', { className: 'dsh-bg-control' }, h('div', { className: 'dsh-bg-control-head' }, h('span', null, '图片适配')), h('div', { className: 'dsh-bg-segments', role: 'group', 'aria-label': '图片适配' }, ...[['cover','铺满'],['contain','完整显示'],['repeat','平铺']].map(([value,label]) => h('button', { key: value, type: 'button', 'aria-pressed': p.fit === value, onClick: () => set('fit', value) }, label))))
+            ),
+            h('div', { className: 'dsh-bg-footer' }, h('span', { className: 'dsh-bg-muted' }, '图片不上传服务器 · 设置自动保存'), h('button', { type: 'button', disabled: !record.image, className: 'dsh-bg-button', onClick: () => { setDraft({}); void update(() => ({ preferences: normalizePreferences(), image: null, name: '' })); } }, '移除背景'))
           ),
-          h('p', { role: error ? 'alert' : 'status', style: { marginTop: 16 } }, error || (!ready ? '正在读取…' : busy ? '正在保存…' : '设置自动保存。'))
+          h('p', { className: 'dsh-bg-status', role: error ? 'alert' : 'status', style: { marginTop: 12 } }, error || (!ready ? '正在读取设置…' : busy ? '正在保存…' : '关闭设置后即可查看首页效果。'))
         );
       }
       ctx.slots.inject('settings.section', () => ctx.slots.register({ name: 'settings.section', id: 'dsh-background-image', label: '背景图片', order: 80 }, Settings));
       const themeObserver = new MutationObserver(() => { if (!disposed && ready) { renderBackground(); emit(); } });
       themeObserver.observe(document.body, { attributes: true, attributeFilter: ['data-ds-dark-theme', 'class'] });
-      ctx.effect(() => () => { disposed = true; themeObserver.disconnect(); style.remove(); if (url) URL.revokeObjectURL(url); listeners.clear(); void storage.close(); });
+      ctx.effect(() => () => { disposed = true; themeObserver.disconnect(); style.remove(); settingsStyle.remove(); if (url) URL.revokeObjectURL(url); listeners.clear(); void storage.close(); });
     },
   };
 }
