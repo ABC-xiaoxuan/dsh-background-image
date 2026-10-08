@@ -35,6 +35,11 @@ test('every background rule is inactive while settings is open', () => {
   assert.ok(selectors.length >= 3);
   for (const selector of selectors) assert.ok(selector.startsWith('body:not(:has(.wCInkW_overlay))'), selector);
 });
+test('sidebar inner surface is transparent and right tools remain opaque', () => {
+  const css = backgroundCSS('blob:test', {sidebarTransparency:85}, {'--dsw-alias-bg-base':'rgb(255, 255, 255)'});
+  assert.match(css,/\.BynINW_sidebarCol \._2H3hWW_root \{ background:transparent !important/);
+  assert.match(css,/\.BynINW_rightbarCol \{ background:rgb\(255, 255, 255\) !important/);
+});
 test('bundle registers through the runtime ModuleLoader', async () => {
   let definition;
   vm.runInNewContext(await readFile(new URL('../lib/client.js',import.meta.url),'utf8'),{window:{__ModuleLoader__:{load:d=>definition=d}}});

@@ -4,13 +4,13 @@
 
 ## 安装（无需下载源码）
 
-适配 DeepSeek Harness **0.2.0-rc.2**，当前版本 **v1.3.0**。
+适配 DeepSeek Harness **0.2.0-rc.2**，当前版本 **v1.3.1**。
 
 1. 打开 Harness 的 **插件** 页面，找到添加／安装插件入口。
 2. 在安装地址／包地址输入框粘贴下面的完整地址，并确认安装：
 
 ```text
-https://github.com/ABC-xiaoxuan/dsh-background-image/releases/download/v1.3.0/dsh-background-image-1.3.0.tgz
+https://github.com/ABC-xiaoxuan/dsh-background-image/releases/download/v1.3.1/dsh-background-image-1.3.1.tgz
 ```
 
 3. 启用 `dsh-background-image`。如提示需要重启，请完全退出并重新打开 Harness。
@@ -24,7 +24,7 @@ https://github.com/ABC-xiaoxuan/dsh-background-image/releases/download/v1.3.0/ds
 
 ### GitHub 无法访问时
 
-从 [v1.3.0 发布页](https://github.com/ABC-xiaoxuan/dsh-background-image/releases/tag/v1.3.0) 下载 `dsh-background-image-1.3.0.tgz`，再通过插件管理器安装本地文件。若入口接受的是路径，请填写文件的**绝对路径**，不要填写 GitHub 发布页地址。
+从 [v1.3.1 发布页](https://github.com/ABC-xiaoxuan/dsh-background-image/releases/tag/v1.3.1) 下载 `dsh-background-image-1.3.1.tgz`，再通过插件管理器安装本地文件。若入口接受的是路径，请填写文件的**绝对路径**，不要填写 GitHub 发布页地址。
 
 ### 更新与卸载
 
@@ -39,10 +39,10 @@ https://github.com/ABC-xiaoxuan/dsh-background-image/releases/download/v1.3.0/ds
 - 支持开关、主题遮罩、模糊、铺满／完整显示／平铺。
 - 支持移除图片并恢复默认；禁用插件会移除其背景样式。
 - 背景图片透明度：0% 为清晰显示，100% 为完全不可见。
-- 分区透明度：侧栏、聊天／右侧面板、输入框可独立调整。0% 保留底色，100% 完全透明；输入框默认 30%，侧栏与聊天默认 80%。旧版面板参数自动迁移。
+- 分区透明度：侧栏、首页／聊天区、输入框可独立调整。0% 保留底色，100% 完全透明；输入框默认 30%，侧栏与聊天默认 80%。旧版面板参数自动迁移。
 - 实时微缩界面预览：调整透明度、遮罩、模糊与适配方式时查看效果（模糊按预览比例缩小，平铺使用缩略尺寸，非像素级复现）。
 - 恢复默认效果保留当前图片；移除背景同时清除图片与效果。
-- 首页／聊天主界面使用背景；文字、图标、代码块与应用菜单保留原有主题样式以便阅读。
+- 首页／聊天主界面和左侧边栏使用连续背景（包含侧栏展开／收起状态）；右侧工具面板保持正常底色，文字、图标、代码块与应用菜单保留原有主题样式以便阅读。
 - 图片 Blob URL 复用，主题颜色缓存；参数与图片分开保存，滑块更新合并写入，关闭设置时提交最终值。
 - 打开设置时自动停用背景图片和透明度覆盖，整个界面恢复原始主题背景；关闭设置后自动恢复。背景图片的选择与调整入口仍保留在设置内。
 - 深浅色切换后自动重新计算背景颜色；网页 iframe、PDF 等外部／嵌入内容不强制透明。

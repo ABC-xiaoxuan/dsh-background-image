@@ -1,6 +1,6 @@
 {
   "name": "dsh-background-image",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "DeepSeek Harness 本地背景图片插件",
   "type": "module",
   "license": "MIT",
